@@ -23,7 +23,7 @@ export const searchPharmacie = async (req, res) => {
     }
 
     // Vérifier qu’il ne contient que des caractères autorisés
-    if (!validator.matches(q, /^[a-zA-ZÀ-ÿ0-9\s,'\-]+$/u)) {
+    if (!validator.matches(q, /^[a-zA-ZÀ-ÿ0-9\s,'\-().]+$/u)) {
       return res
         .status(400)
         .json({ error: "paramètre 'q' contient des caractères non autorisés" });
@@ -34,7 +34,7 @@ export const searchPharmacie = async (req, res) => {
 
     if (pharmacie) {
       const dataRetour = {
-        query: pharmacie.query,
+        query: pharmacie.query.split(",")[0],
         latitude: pharmacie.latitude,
         longitude: pharmacie.longitude,
       };
@@ -47,7 +47,7 @@ export const searchPharmacie = async (req, res) => {
 
     if (!data || !data.features || data.features.length === 0) {
       const dataRetour = {
-        query: q,
+        query: q.split(",")[0],
         latitude: null,
         longitude: null,
       };
@@ -69,7 +69,7 @@ export const searchPharmacie = async (req, res) => {
     });
 
     const dataRetour = {
-      query: q.toUpperCase(),
+      query: q.toUpperCase().split(",")[0],
       latitude: coords[1],
       longitude: coords[0],
     };
@@ -88,6 +88,7 @@ export const searchPharmacie = async (req, res) => {
 export const searchMultiplePharmacies = async (req, res) => {
   try {
     const { pharmacies } = req.body;
+    console.log(pharmacies);
 
     // Vérification basique du corps de la requête
     if (!pharmacies || !Array.isArray(pharmacies) || pharmacies.length === 0) {
@@ -115,7 +116,7 @@ export const searchMultiplePharmacies = async (req, res) => {
         }
 
         // Vérification caractères autorisés
-        const regex = /^[a-zA-ZÀ-ÿ0-9\s,'\-]+$/u;
+        const regex = /^[a-zA-ZÀ-ÿ0-9\s,'\-().]+$/u;
         if (!validator.matches(q, regex)) {
           results.push({
             query: rawQ,
@@ -152,15 +153,16 @@ export const searchMultiplePharmacies = async (req, res) => {
             await pharmacie.save();
             console.log(`"${query}" ajouté en base`);
           } else {
+            let nomPharmacie = query.split(",")[0];
             console.warn(`"${query}" introuvable sur Nominatim`);
-            results.push({ query, message: "Introuvable" });
+            results.push({ nomPharmacie, longitude: null, latitude: null });
             continue;
           }
         }
-
+        let nomPharmacie = query.split(",")[0];
         // Ajouter le résultat
         results.push({
-          query,
+          nomPharmacie,
           latitude: pharmacie.latitude,
           longitude: pharmacie.longitude,
         });
@@ -173,20 +175,10 @@ export const searchMultiplePharmacies = async (req, res) => {
       }
     }
 
-    // 🔚 Réponse finale
+    // Réponse finale
     return res.json({ results });
   } catch (error) {
     console.error("Erreur searchMultiplePharmacies:", error.message);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
-
-// cleanInput(value){
-//     return (value || "")
-//       .trim()
-//       .toLowerCase()
-//       .replaceAll(/[<>]/g, "")
-//       .replaceAll(/["'`]/g, "")
-//       .replaceAll(/[(){};]/g, "")
-//       .replaceAll(/javascript:/gi, "");
-//   };
