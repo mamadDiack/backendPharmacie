@@ -46,6 +46,13 @@ export const searchPharmacie = async (req, res) => {
     const data = await fetchFromNominatim(q, format, limit);
 
     if (!data || !data.features || data.features.length === 0) {
+      newPharmacie = new Pharmacie({
+        nom: q.split(",")[0],
+        query: q,
+        latitude: null,
+        longitude: null,
+      });
+      await newPharmacie.save();
       const dataRetour = {
         query: q.split(",")[0],
         latitude: null,
@@ -154,12 +161,20 @@ export const searchMultiplePharmacies = async (req, res) => {
             console.log(`"${query}" ajouté en base`);
           } else {
             let nomPharmacie = query.split(",")[0];
+            pharmacie = new Pharmacie({
+              nom: nomPharmacie,
+              query,
+              latitude: null,
+              longitude: null,
+            });
+            await pharmacie.save();
             console.warn(`"${query}" introuvable sur Nominatim`);
             results.push({ nomPharmacie, longitude: null, latitude: null });
             continue;
           }
         }
         let nomPharmacie = query.split(",")[0];
+
         // Ajouter le résultat
         results.push({
           nomPharmacie,
