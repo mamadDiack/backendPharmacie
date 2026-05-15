@@ -22,8 +22,8 @@ Ce projet est une API backend permettant de rechercher les coordonnées géograp
 1. **Cloner le projet** :
 
    ```bash
-   git clone https://github.com/mamadDiack/api-sandbox-MoMo.git
-   cd api-sandbox-MoMo
+   git clone https://https://github.com/mamadDiack/backendPharmacie.git
+   cd backendPharmacie
    ```
 
 2. **Installer les dépendances** :
